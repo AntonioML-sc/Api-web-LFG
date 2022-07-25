@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 use App\Traits\Uuids;
 
-class Game extends Model
+class Channel extends Model
 {
     use Uuids;
     use HasFactory;
@@ -15,13 +15,8 @@ class Game extends Model
     protected $primaryKey = 'id';
 
     // relationships
-    public function user()
+    public function game()
     {
-        return $this->belongsTo(User::class);
-    }
-
-    public function channels()
-    {
-        return $this->hasMany(Channel::class);
+        return $this->belongsTo(Game::class);
     }
 }
