@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Validator;
 
 class RoleController extends Controller
 {
-    public function createRole(Request $request)
+    public function newRole(Request $request)
     {
 
         try {
