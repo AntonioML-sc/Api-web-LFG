@@ -73,4 +73,9 @@ class User extends Authenticatable implements JWTSubject
     {
         return $this->hasMany(Game::class);
     }
+    
+    public function channels()
+    {
+        return $this->belongsToMany(Channel::class);
+    }
 }
