@@ -9,9 +9,14 @@ use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Tymon\JWTAuth\Contracts\JWTSubject;
 
+use App\Traits\Uuids;
+
 class User extends Authenticatable implements JWTSubject
 {
+    use Uuids;
     use HasApiTokens, HasFactory, Notifiable;
+    
+    protected $primaryKey = 'id';
 
     /**
      * The attributes that are mass assignable.
