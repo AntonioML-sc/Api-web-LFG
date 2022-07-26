@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AuthController;
 use App\Http\Controllers\RoleController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -15,4 +16,11 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
+// presentation
+Route::get('/', function() { return "api root"; });
+
+// provisional. add middleware superadmin
 Route::post('/roles', [RoleController::class, 'newRole']);
+
+// authentication routes
+Route::post('/register', [AuthController::class, 'register']);
