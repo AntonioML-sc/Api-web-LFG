@@ -24,3 +24,4 @@ Route::post('/roles', [RoleController::class, 'newRole']);
 
 // authentication routes
 Route::post('/register', [AuthController::class, 'register']);
+Route::post('login', [AuthController::class, 'login']);
