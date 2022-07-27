@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\GameController;
 use App\Http\Controllers\RoleController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -29,4 +30,9 @@ Route::post('login', [AuthController::class, 'login']);
 Route::group(["middleware" => "jwt.auth"] , function() {
     Route::get('/my-profile', [AuthController::class, 'myProfile']);
     Route::post('/logout', [AuthController::class, 'logout']);
+});
+
+// games routes
+Route::group(["middleware" => "jwt.auth"] , function() {
+    Route::post('/new-game', [GameController::class, 'newGame']);
 });
