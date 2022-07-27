@@ -55,4 +55,5 @@ Route::group(["middleware" => "jwt.auth"] , function() {
 // messages routes
 Route::group(["middleware" => "jwt.auth"] , function() {
     Route::post('/post-message', [MessageController::class, 'postMessage']);
+    Route::get('/get-channel-messages/{channel_id}', [MessageController::class, 'getMessagesByChannelId']);
 });
