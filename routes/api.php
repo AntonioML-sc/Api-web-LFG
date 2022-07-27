@@ -48,4 +48,5 @@ Route::group(["middleware" => "jwt.auth"] , function() {
 // users routes
 Route::group(["middleware" => "jwt.auth"] , function() {
     Route::post('/join-to-channel', [UserController::class, 'joinToChannel']);
+    Route::post('/leave-channel', [UserController::class, 'leaveChannel']);
 });

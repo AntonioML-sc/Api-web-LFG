@@ -67,4 +67,62 @@ class UserController extends Controller
             );
         }
     }
+
+    public function leaveChannel(Request $request)
+    {
+        try {
+
+            Log::info("User leaving channel");
+
+            $validator = Validator::make($request->all(), [
+                'channel_id' => 'required|string|max:36|min:36'
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json($validator->errors()->toJson(), 400);
+            }
+
+            $channelId = $request->input('channel_id');
+
+            $channel = Channel::find($channelId);
+
+            if (!$channel) {
+                return response()->json(
+                    [
+                        'success' => false,
+                        'message' => 'The channel specified does not exist'
+                    ],
+                    404
+                );
+            }
+
+            $userId = auth()->user()->id;
+
+            $user = User::find($userId);
+
+            $user->channels()->detach($channelId);
+
+            Log::info('The user '. $user->email .' has left the channel '. $channel->name);
+
+            return response()->json(
+                [
+                    'success' => true,
+                    'message' => 'The user '. $user->email .' has left the channel '. $channel->name
+                ],
+                200
+            );
+
+        } catch (\Exception $exception) {
+
+            Log::error("Error in leaving channel: " . $exception->getMessage());
+
+            return response()->json(
+                [
+                    'success' => false,
+                    'message' => 'Error in leaving channel'
+                ],
+                500
+            );
+        }
+    }
 }
