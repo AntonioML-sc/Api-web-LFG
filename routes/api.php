@@ -4,6 +4,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ChannelController;
 use App\Http\Controllers\GameController;
 use App\Http\Controllers\RoleController;
+use App\Http\Controllers\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -42,4 +43,9 @@ Route::group(["middleware" => "jwt.auth"] , function() {
 Route::group(["middleware" => "jwt.auth"] , function() {
     Route::post('/new-channel', [ChannelController::class, 'newChannel']);
     Route::get('/get-game-channels/{game_id}', [ChannelController::class, 'getChannelsByGameId']);
+});
+
+// users routes
+Route::group(["middleware" => "jwt.auth"] , function() {
+    Route::post('/join-to-channel', [UserController::class, 'joinToChannel']);
 });
