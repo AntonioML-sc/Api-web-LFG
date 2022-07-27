@@ -41,4 +41,5 @@ Route::group(["middleware" => "jwt.auth"] , function() {
 // channels routes
 Route::group(["middleware" => "jwt.auth"] , function() {
     Route::post('/new-channel', [ChannelController::class, 'newChannel']);
+    Route::get('/get-game-channels/{game_id}', [ChannelController::class, 'getChannelsByGameId']);
 });

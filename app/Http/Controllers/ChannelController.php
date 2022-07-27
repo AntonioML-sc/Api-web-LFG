@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Channel;
+use App\Models\Game;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Log;
@@ -53,6 +54,60 @@ class ChannelController extends Controller
                 [
                     'success' => false,
                     'message' => 'Error creating channel'
+                ],
+                500
+            );
+        }
+    }
+
+    public function getChannelsByGameId($game_id)
+    {
+
+        try {
+
+            Log::info("Getting all game's channels");
+
+            $game = Game::find($game_id);
+
+            if (!$game) {
+                return response()->json(
+                    [
+                        'success' => false,
+                        'message' => 'The game is not registered'
+                    ],
+                    400
+                );
+            }
+
+            $channels = Channel::query()->where('game_id', $game_id)->get()->toArray();
+
+            if ($channels == []) {
+                return response()->json(
+                    [
+                        'success' => false,
+                        'message' => 'There are no channels of the game specified yet'
+                    ],
+                    404
+                );
+            }
+
+            return response()->json(
+                [
+                    'success' => true,
+                    'message' => 'Channels retrieved successfully',
+                    'data' => $channels
+                ],
+                200
+            );
+
+        } catch (\Exception $exception) {
+
+            Log::error("Error getting channels: " . $exception->getMessage());
+
+            return response()->json(
+                [
+                    'success' => false,
+                    'message' => 'Error getting channels'
                 ],
                 500
             );
