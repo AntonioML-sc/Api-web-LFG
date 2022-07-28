@@ -32,12 +32,18 @@ class ChannelController extends Controller
             $gameId = $request->input("game_id");
             $name = $request->input("name");
 
+            // Creates the new channel
             $channel = new Channel();
 
             $channel->game_id = $gameId;
             $channel->name = $name;
 
             $channel->save();
+
+            // the user joins to the created channel
+            $userId = auth()->user()->id;
+
+            $channel->users()->attach($userId);
 
             return response()->json(
                 [
