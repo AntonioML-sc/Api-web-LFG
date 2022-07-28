@@ -197,4 +197,36 @@ class AuthController extends Controller
             );
         }
     }
+
+    public function deleteMyProfile() {
+        try {
+
+            $user_id = auth()->user()->id;
+
+            $user = User::query()->find($user_id);
+
+            Log::info('User ' . $user_id . ": " . $user->email . 'deleting their profile');
+
+            $user->delete();
+
+            return response()->json(
+                [
+                    'success' => true,
+                    'message' => 'User profile deleted'
+                ]
+            );
+
+        } catch (\Exception $exception) {
+
+            Log::error("Error deleting profile: " . $exception->getMessage());
+
+            return response()->json(
+                [
+                    'success' => false,
+                    'message' => 'Error deleting profile'
+                ],
+                Response::HTTP_INTERNAL_SERVER_ERROR
+            );
+        }
+    }
 }
