@@ -28,7 +28,7 @@ class AuthController extends Controller
             ]);
 
             if ($validator->fails()) {
-                return response()->json($validator->errors()->toJson(), 400);
+                return response()->json($validator->errors()->toJson(), Response::HTTP_BAD_REQUEST);
             }
 
             $user = User::create([
@@ -42,10 +42,9 @@ class AuthController extends Controller
 
             $token = JWTAuth::fromUser($user);
 
-            Log::info('New user registered: '. $user->email);
+            Log::info('New user registered: ' . $user->email);
 
-            return response()->json(compact('user', 'token'), 201);
-
+            return response()->json(compact('user', 'token'), Response::HTTP_CREATED);
         } catch (\Exception $exception) {
 
             Log::error("Error in registering new user: " . $exception->getMessage());
@@ -55,7 +54,7 @@ class AuthController extends Controller
                     'success' => false,
                     'message' => 'Error in registering new user'
                 ],
-                500
+                Response::HTTP_INTERNAL_SERVER_ERROR
             );
         }
     }
@@ -70,17 +69,19 @@ class AuthController extends Controller
             $jwt_token = null;
 
             if (!$jwt_token = JWTAuth::attempt($input)) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Invalid Email or Password',
-                ], Response::HTTP_UNAUTHORIZED);  // = status 401
+                return response()->json(
+                    [
+                        'success' => false,
+                        'message' => 'Invalid Email or Password',
+                    ],
+                    Response::HTTP_UNAUTHORIZED
+                );
             }
 
             return response()->json([
                 'success' => true,
                 'token' => $jwt_token,
             ]);
-
         } catch (\Exception $exception) {
 
             Log::error("Error on login: " . $exception->getMessage());
@@ -90,7 +91,7 @@ class AuthController extends Controller
                     'success' => false,
                     'message' => 'Error on login'
                 ],
-                500
+                Response::HTTP_INTERNAL_SERVER_ERROR
             );
         }
     }
@@ -103,11 +104,11 @@ class AuthController extends Controller
     }
 
     public function logout()
-    {        
+    {
         Log::info('Trying log out');
 
         try {
-            
+
             JWTAuth::invalidate(auth());
 
             Log::info('Successful log out');
@@ -116,15 +117,84 @@ class AuthController extends Controller
                 'success' => true,
                 'message' => 'User logged out successfully'
             ]);
-            
         } catch (\Exception $exception) {
 
             Log::error("Error on logout: " . $exception->getMessage());
 
-            return response()->json([
-                'success' => false,
-                'message' => 'Sorry, the user cannot be logged out'
-            ], Response::HTTP_INTERNAL_SERVER_ERROR);  // es como poner un status 500
+            return response()->json(
+                [
+                    'success' => false,
+                    'message' => 'Sorry, the user cannot be logged out'
+                ],
+                Response::HTTP_INTERNAL_SERVER_ERROR
+            );
+        }
+    }
+
+    public function updateMyProfile(Request $request)
+    {
+        try {
+
+            $user_id = auth()->user()->id;
+
+            $user = User::query()->find($user_id);
+
+            Log::info('User ' . $user_id . ": " . $user->email . 'updating their profile');
+
+            $validator = Validator::make($request->all(), [
+                'name' => 'string|max:255',
+                'email' => 'string|email|max:255|unique:users',
+                'password' => 'string|min:8',
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json(
+                    [
+                        'success' => false,
+                        'message' => $validator->errors()
+                    ],
+                    Response::HTTP_BAD_REQUEST
+                );
+            }
+
+            $name = $request->input("name");
+            $email = $request->input("email");
+            $password = $request->input("password");
+
+            if (isset($name)) {
+                $user->name = $name;
+            }
+
+            if (isset($password)) {
+                $user->password = bcrypt($password);
+            }
+
+            if (isset($email)) {
+                $user->email = $email;
+            }
+
+            $user->save();
+
+            Log::info('User profile updated successfully. New data: ' . $user);
+
+            return response()->json(
+                [
+                    'success' => true,
+                    'message' => 'User profile updated'
+                ],
+                Response::HTTP_CREATED
+            );
+        } catch (\Exception $exception) {
+
+            Log::error("Error updating profile: " . $exception->getMessage());
+
+            return response()->json(
+                [
+                    'success' => false,
+                    'message' => 'Error updating profile'
+                ],
+                Response::HTTP_INTERNAL_SERVER_ERROR
+            );
         }
     }
 }
