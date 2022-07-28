@@ -16,7 +16,7 @@ class GameController extends Controller
             Log::info('Creating task');
 
             $validator = Validator::make($request->all(), [
-                'title' => ['required', 'string', 'max:255', 'min:3'],
+                'title' => ['required', 'string', 'max:255', 'min:3', 'unique:games'],
                 'genre' => ['required', 'string', 'max:255'],
                 'age' => ['required', 'integer'],
                 'dev_studio' => ['required', 'string', 'max:255'],
@@ -95,6 +95,99 @@ class GameController extends Controller
                 [
                     'success' => false,
                     'message' => 'Error retrieving games'
+                ],
+                Response::HTTP_INTERNAL_SERVER_ERROR
+            );
+        }
+    }
+
+    public function updateGame(Request $request, $gameId) {
+        try {
+
+            Log::info('Updating game');
+
+            $validator = Validator::make($request->all(), [
+                'title' => ['string', 'max:255', 'min:3', 'unique:games'],
+                'genre' => ['string', 'max:255'],
+                'age' => ['integer'],
+                'dev_studio' => ['string', 'max:255']
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json(
+                    [
+                        'success' => false,
+                        'message' => $validator->errors()
+                    ],
+                    Response::HTTP_BAD_REQUEST
+                );
+            }
+
+            $game = Game::query()->find($gameId);
+
+            if (!$game) {
+                return response()->json(
+                    [
+                        'success' => false,
+                        'message' => 'Invalid game id'
+                    ],
+                    Response::HTTP_BAD_REQUEST
+                );
+            }
+
+            $user_id = auth()->user()->id;
+
+            if ($game->user_id != $user_id) {
+                return response()->json(
+                    [
+                        'success' => false,
+                        'message' => 'This game register does not belong to you'
+                    ],
+                    Response::HTTP_UNAUTHORIZED
+                );
+            }
+
+            $title = $request->input("title");
+            $genre = $request->input("genre");
+            $age = $request->input("age");
+            $devStudio = $request->input("dev_studio");
+
+            if(isset($title)) {
+                $game->title = $title;
+            }
+
+            if(isset($genre)) {
+                $game->genre = $genre;
+            }
+
+            if(isset($age)) {
+                $game->age = $age;
+            }
+
+            if(isset($devStudio)) {
+                $game->dev_studio = $devStudio;
+            }
+
+            $game->save();
+
+            Log::info('Game updated. Info: ' . $game);
+
+            return response()->json(
+                [
+                    'success' => true,
+                    'message' => 'Game updated successfully',
+                    'data' => $game
+                ]                
+            );
+
+        } catch (\Exception $exception) {
+
+            Log::error("Error updating game " . $exception->getMessage());
+
+            return response()->json(
+                [
+                    'success' => false,
+                    'message' => 'Error updating game'
                 ],
                 Response::HTTP_INTERNAL_SERVER_ERROR
             );
