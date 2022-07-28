@@ -38,6 +38,8 @@ Route::group(["middleware" => "jwt.auth"] , function() {
 });
 
 // games routes
+Route::get('/games', [GameController::class, 'getGames']);
+
 Route::group(["middleware" => "jwt.auth"] , function() {
     Route::post('/new-game', [GameController::class, 'newGame']);
 });

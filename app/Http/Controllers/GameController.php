@@ -6,10 +6,12 @@ use App\Models\Game;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
+use Symfony\Component\HttpFoundation\Response;
 
 class GameController extends Controller
 {
-    public function newGame(Request $request) {
+    public function newGame(Request $request)
+    {
         try {
             Log::info('Creating task');
 
@@ -26,7 +28,7 @@ class GameController extends Controller
                         'success' => false,
                         'message' => $validator->errors()
                     ],
-                    400
+                    Response::HTTP_BAD_REQUEST
                 );
             }
 
@@ -36,7 +38,6 @@ class GameController extends Controller
             $genre = $request->input("genre");
             $age = $request->input("age");
             $devStudio = $request->input("dev_studio");
-
 
             $game = new Game();
 
@@ -54,7 +55,7 @@ class GameController extends Controller
                     'success' => true,
                     'message' => 'New game created'
                 ],
-                201
+                Response::HTTP_CREATED
             );
         } catch (\Exception $exception) {
 
@@ -65,9 +66,38 @@ class GameController extends Controller
                     'success' => false,
                     'message' => 'Error creating game'
                 ],
-                500
+                Response::HTTP_INTERNAL_SERVER_ERROR
             );
         }
+    }
 
+    public function getGames()
+    {
+        try {
+
+            Log::info('retrieving all games');
+
+            $games = Game::all();
+
+            return response()->json(
+                [
+                    'success' => true,
+                    'message' => 'Games retrieved successfully',
+                    'data' => $games
+                ]
+            );
+
+        } catch (\Exception $exception) {
+
+            Log::error("Error retrieving games " . $exception->getMessage());
+
+            return response()->json(
+                [
+                    'success' => false,
+                    'message' => 'Error retrieving games'
+                ],
+                Response::HTTP_INTERNAL_SERVER_ERROR
+            );
+        }
     }
 }
