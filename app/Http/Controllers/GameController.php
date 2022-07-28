@@ -193,4 +193,58 @@ class GameController extends Controller
             );
         }
     }
+
+    public function deleteGame($gameId) {
+        try {
+
+            Log::info('Trying to delete game');
+            
+            $game = Game::query()->find($gameId);
+
+            if (!$game) {
+                return response()->json(
+                    [
+                        'success' => false,
+                        'message' => 'Invalid game id'
+                    ],
+                    Response::HTTP_BAD_REQUEST
+                );
+            }
+
+            $user_id = auth()->user()->id;
+
+            if ($game->user_id != $user_id) {
+                return response()->json(
+                    [
+                        'success' => false,
+                        'message' => 'This game register does not belong to you'
+                    ],
+                    Response::HTTP_UNAUTHORIZED
+                );
+            }
+
+            Log::info('The game ' . $game->id . ': ' . $game->title . ' is about to be deleted');
+
+            $game->delete();
+
+            return response()->json(
+                [
+                    'success' => true,
+                    'message' => 'Game deleted successfully'
+                ]                
+            );
+
+        } catch (\Exception $exception) {
+
+            Log::error("Error deleting game " . $exception->getMessage());
+
+            return response()->json(
+                [
+                    'success' => false,
+                    'message' => 'Error deleting game'
+                ],
+                Response::HTTP_INTERNAL_SERVER_ERROR
+            );
+        }
+    }
 }
