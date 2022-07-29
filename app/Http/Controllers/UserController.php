@@ -171,4 +171,44 @@ class UserController extends Controller
             );
         }
     }
+
+    public function degradeUserFromSuperAdmin($userId) {
+
+        try {
+            
+            $user = User::find($userId);
+
+            if (!$user) {
+                return response()->json(
+                    [
+                        'success' => false,
+                        'message' => 'User not found'
+                    ],
+                    Response::HTTP_NOT_FOUND
+                );
+            }
+
+            $user->roles()->detach(self::SUPER_ADMIN_ID_LOCAL);
+
+            return response()->json(
+                [
+                    'success' => true,
+                    'message' => 'User '. $user->name .' is not super_admin anymore'
+                ],
+                Response::HTTP_OK
+            );
+
+        } catch (Exception $exception) {
+            
+            Log::error("Error degrading user from super_admin" . $exception->getMessage());
+
+            return response()->json(
+                [
+                    'success' => false,
+                    'message' => 'Error degrading user from super_admin'
+                ],
+                Response::HTTP_INTERNAL_SERVER_ERROR
+            );
+        }
+    }
 }
