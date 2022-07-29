@@ -58,6 +58,10 @@ Route::group(["middleware" => "jwt.auth"] , function() {
     Route::post('/leave-channel', [UserController::class, 'leaveChannel']);
 });
 
+Route::group(["middleware" => ["jwt.auth", "isSuperAdmin"]] , function() {
+    Route::post('/user/super_admin/{id}', [UserController::class, 'promoteUserToSuperAdmin']);
+});
+
 // messages routes
 Route::group(["middleware" => "jwt.auth"] , function() {
     Route::post('/post-message', [MessageController::class, 'postMessage']);

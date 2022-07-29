@@ -7,9 +7,13 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
+use Symfony\Component\HttpFoundation\Response;
+use Exception;
 
 class UserController extends Controller
 {
+    const SUPER_ADMIN_ID_LOCAL = "a3c06730-7018-467d-8187-cef95f37224d";
+
     public function joinToChannel(Request $request)
     {
         try {
@@ -122,6 +126,48 @@ class UserController extends Controller
                     'message' => 'Error in leaving channel'
                 ],
                 500
+            );
+        }
+    }
+
+    //// ******** ADMIN AND SUPERADMIN MANAGEMENT ******** \\\\
+
+    public function promoteUserToSuperAdmin($userId) {
+
+        try {
+            
+            $user = User::find($userId);
+
+            if (!$user) {
+                return response()->json(
+                    [
+                        'success' => false,
+                        'message' => 'User not found'
+                    ],
+                    Response::HTTP_NOT_FOUND
+                );
+            }
+
+            $user->roles()->attach(self::SUPER_ADMIN_ID_LOCAL);
+
+            return response()->json(
+                [
+                    'success' => true,
+                    'message' => 'User '. $user->name .' promoted to super_admin'
+                ],
+                Response::HTTP_CREATED
+            );
+
+        } catch (Exception $exception) {
+            
+            Log::error("Error promoting user to super_admin" . $exception->getMessage());
+
+            return response()->json(
+                [
+                    'success' => false,
+                    'message' => 'Error promoting user to super_admin'
+                ],
+                Response::HTTP_INTERNAL_SERVER_ERROR
             );
         }
     }
