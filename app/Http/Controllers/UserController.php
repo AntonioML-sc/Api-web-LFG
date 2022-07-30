@@ -146,13 +146,22 @@ class UserController extends Controller
         function setAdmin($user, $adminId, $superId)
         {
             $user->roles()->detach($superId);
-            $user->roles()->attach($adminId);
+            $isAdmin = $user->roles->contains($adminId);
+            if (!$isAdmin) {
+                $user->roles()->attach($adminId);
+            }
         }
 
         function setSuperAdmin($user, $adminId, $superId)
-        {
-            $user->roles()->attach($superId);
-            $user->roles()->attach($adminId);
+        {            
+            $isAdmin = $user->roles->contains($adminId);
+            $isSuperAdmin = $user->roles->contains($superId);
+            if (!$isAdmin) {
+                $user->roles()->attach($adminId);
+            }
+            if (!$isSuperAdmin) {
+                $user->roles()->attach($superId);
+            }            
         }
 
         try {
@@ -191,7 +200,7 @@ class UserController extends Controller
                         Response::HTTP_BAD_REQUEST
                     );
             }
-            
+
             return response()->json(
                 [
                     'success' => true,

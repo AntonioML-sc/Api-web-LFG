@@ -40,7 +40,7 @@ Route::group(["middleware" => "jwt.auth"] , function() {
 // games routes
 Route::get('/games', [GameController::class, 'getGames']);
 
-Route::group(["middleware" => "jwt.auth"] , function() {
+Route::group(["middleware" => ["jwt.auth", "isAdmin"]] , function() {
     Route::post('games/add-game', [GameController::class, 'newGame']);
     Route::put('/games/update-game/{gameId}', [GameController::class, 'updateGame']);
     Route::delete('/games/delete-game/{gameId}', [GameController::class, 'deleteGame']);
