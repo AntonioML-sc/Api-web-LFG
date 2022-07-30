@@ -29,4 +29,9 @@ class Channel extends Model
     {
         return $this->hasMany(Message::class);
     }
+
+    public function author()
+    {
+        return $this->belongsTo(User::class, 'user_id', 'id');
+    }
 }

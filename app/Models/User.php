@@ -83,4 +83,9 @@ class User extends Authenticatable implements JWTSubject
     {
         return $this->hasMany(Message::class);
     }
+
+    public function myChannels()
+    {
+        return $this->hasMany(Channel::class, 'user_id', 'id');
+    }
 }
