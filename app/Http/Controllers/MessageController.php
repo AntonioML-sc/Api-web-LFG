@@ -19,30 +19,34 @@ class MessageController extends Controller
 
             Log::info("Posting a message");
 
+            // validate the new message text
             $validator = Validator::make($request->all(), [
                 'message_text' => 'required|string|max:65535',
                 'channel_id' => 'required|string|max:36|min:36'
             ]);
 
             if ($validator->fails()) {
-                return response()->json($validator->errors()->toJson(), 400);
+                return response()->json($validator->errors()->toJson(), Response::HTTP_BAD_REQUEST);
             }
 
             $channelId = $request->input('channel_id');
 
             $channel = Channel::find($channelId);
 
+            // check if the channel exists
             if (!$channel) {
                 return response()->json(
                     [
                         'success' => false,
-                        'message' => 'The channel specified does not exist'
+                        'message' => 'Channel not found'
                     ],
-                    404
+                    Response::HTTP_NOT_FOUND
                 );
             }
 
             $userId = auth()->user()->id;
+
+            // Check if the user is registered in the channel
 
             $userInChannel = DB::table('channel_user')
                 ->where('user_id', $userId)
@@ -55,9 +59,11 @@ class MessageController extends Controller
                         'success' => false,
                         'message' => 'The user does not belong to the channel specified'
                     ],
-                    403
+                    Response::HTTP_FORBIDDEN
                 );
             }
+
+            // If everything is ok, the message is created
 
             $messageText = $request->input('message_text');
 
@@ -76,7 +82,7 @@ class MessageController extends Controller
                     'success' => true,
                     'message' => 'message sent'
                 ],
-                201
+                Response::HTTP_CREATED
             );
         } catch (\Exception $exception) {
 
@@ -87,7 +93,7 @@ class MessageController extends Controller
                     'success' => false,
                     'message' => 'Error posting message'
                 ],
-                500
+                Response::HTTP_INTERNAL_SERVER_ERROR
             );
         }
     }
@@ -100,17 +106,20 @@ class MessageController extends Controller
 
             $channel = Channel::find($channel_id);
 
+            // check if the channel exists
             if (!$channel) {
                 return response()->json(
                     [
                         'success' => false,
                         'message' => 'The channel does not exist'
                     ],
-                    400
+                    Response::HTTP_NOT_FOUND
                 );
             }
 
             $userId = auth()->user()->id;
+
+            // check if the user is registered in the channel
 
             $userInChannel = DB::table('channel_user')
                 ->where('user_id', $userId)
@@ -123,10 +132,11 @@ class MessageController extends Controller
                         'success' => false,
                         'message' => 'The user does not belong to the channel specified'
                     ],
-                    403
+                    Response::HTTP_FORBIDDEN
                 );
             }
 
+            // get all of the messages of the channel in chronological order
             $messages = Message::query()
                 ->where('channel_id', $channel_id)
                 ->select('users.name as user', 'messages.message_text')
@@ -141,7 +151,7 @@ class MessageController extends Controller
                         'success' => false,
                         'message' => 'There are no messages in this channel yet'
                     ],
-                    404
+                    Response::HTTP_NOT_FOUND
                 );
             }
 
@@ -151,7 +161,7 @@ class MessageController extends Controller
                     'message' => 'Messages retrieved successfully',
                     'data' => $messages
                 ],
-                200
+                Response::HTTP_OK
             );
         } catch (\Exception $exception) {
 
@@ -162,7 +172,7 @@ class MessageController extends Controller
                     'success' => false,
                     'message' => 'Error getting channel messages'
                 ],
-                500
+                Response::HTTP_INTERNAL_SERVER_ERROR
             );
         }
     }
