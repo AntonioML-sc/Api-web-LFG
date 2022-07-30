@@ -26,6 +26,7 @@ return new class extends Migration
                 ->on('users')
                 ->onDelete('cascade');
             $table->timestamps();
+            $table->unique(['channel_id', 'user_id']);
         });
     }
 
