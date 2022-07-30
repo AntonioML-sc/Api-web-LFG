@@ -12,6 +12,7 @@ use Exception;
 
 class UserController extends Controller
 {
+    const ADMIN_ID_LOCAL = "5695fbbd-4675-4b2a-b31d-603252c21c94";
     const SUPER_ADMIN_ID_LOCAL = "a3c06730-7018-467d-8187-cef95f37224d";
 
     public function joinToChannel(Request $request)
@@ -48,16 +49,15 @@ class UserController extends Controller
 
             $user->channels()->attach($channelId);
 
-            Log::info('The user '. $user->email .' has joined to the channel '. $channel->name);
+            Log::info('The user ' . $user->email . ' has joined to the channel ' . $channel->name);
 
             return response()->json(
                 [
                     'success' => true,
-                    'message' => 'The user '. $user->email .' has joined to the channel '. $channel->name
+                    'message' => 'The user ' . $user->email . ' has joined to the channel ' . $channel->name
                 ],
                 200
             );
-
         } catch (\Exception $exception) {
 
             Log::error("Error in joining to channel: " . $exception->getMessage());
@@ -106,16 +106,15 @@ class UserController extends Controller
 
             $user->channels()->detach($channelId);
 
-            Log::info('The user '. $user->email .' has left the channel '. $channel->name);
+            Log::info('The user ' . $user->email . ' has left the channel ' . $channel->name);
 
             return response()->json(
                 [
                     'success' => true,
-                    'message' => 'The user '. $user->email .' has left the channel '. $channel->name
+                    'message' => 'The user ' . $user->email . ' has left the channel ' . $channel->name
                 ],
                 200
             );
-
         } catch (\Exception $exception) {
 
             Log::error("Error in leaving channel: " . $exception->getMessage());
@@ -130,12 +129,34 @@ class UserController extends Controller
         }
     }
 
-    //// ******** ADMIN AND SUPERADMIN MANAGEMENT ******** \\\\
+    //// ******** ADMIN AND SUPERADMIN MANAGEMENT ******** \\\\    
 
-    public function promoteUserToSuperAdmin($userId) {
+    public function setUserRole($newRole, $userId)
+    {
+
+        $superAdminIdLocal = "a3c06730-7018-467d-8187-cef95f37224d";
+        $adminIdLocal = "5695fbbd-4675-4b2a-b31d-603252c21c94";
+
+        function setUser($user, $adminId, $superId)
+        {
+            $user->roles()->detach($adminId);
+            $user->roles()->detach($superId);
+        }
+
+        function setAdmin($user, $adminId, $superId)
+        {
+            $user->roles()->detach($superId);
+            $user->roles()->attach($adminId);
+        }
+
+        function setSuperAdmin($user, $adminId, $superId)
+        {
+            $user->roles()->attach($superId);
+            $user->roles()->attach($adminId);
+        }
 
         try {
-            
+
             $user = User::find($userId);
 
             if (!$user) {
@@ -148,64 +169,44 @@ class UserController extends Controller
                 );
             }
 
-            $user->roles()->attach(self::SUPER_ADMIN_ID_LOCAL);
+            switch ($newRole) {
+                case 'user':
+                    setUser($user, $adminIdLocal, $superAdminIdLocal);
+                    break;
 
+                case 'admin':
+                    setAdmin($user, $adminIdLocal, $superAdminIdLocal);
+                    break;
+
+                case 'superadmin':
+                    setSuperAdmin($user, $adminIdLocal, $superAdminIdLocal);
+                    break;
+
+                default:
+                    return response()->json(
+                        [
+                            'success' => false,
+                            'message' => 'missing role'
+                        ],
+                        Response::HTTP_BAD_REQUEST
+                    );
+            }
+            
             return response()->json(
                 [
                     'success' => true,
-                    'message' => 'User '. $user->name .' promoted to super_admin'
+                    'message' => $user->name . "'s role set to " . $newRole
                 ],
                 Response::HTTP_CREATED
             );
-
         } catch (Exception $exception) {
-            
-            Log::error("Error promoting user to super_admin" . $exception->getMessage());
+
+            Log::error("Error setting user's role" . $exception->getMessage());
 
             return response()->json(
                 [
                     'success' => false,
-                    'message' => 'Error promoting user to super_admin'
-                ],
-                Response::HTTP_INTERNAL_SERVER_ERROR
-            );
-        }
-    }
-
-    public function degradeUserFromSuperAdmin($userId) {
-
-        try {
-            
-            $user = User::find($userId);
-
-            if (!$user) {
-                return response()->json(
-                    [
-                        'success' => false,
-                        'message' => 'User not found'
-                    ],
-                    Response::HTTP_NOT_FOUND
-                );
-            }
-
-            $user->roles()->detach(self::SUPER_ADMIN_ID_LOCAL);
-
-            return response()->json(
-                [
-                    'success' => true,
-                    'message' => 'User '. $user->name .' is not super_admin anymore'
-                ],
-                Response::HTTP_OK
-            );
-
-        } catch (Exception $exception) {
-            
-            Log::error("Error degrading user from super_admin" . $exception->getMessage());
-
-            return response()->json(
-                [
-                    'success' => false,
-                    'message' => 'Error degrading user from super_admin'
+                    'message' => "Error setting user's role"
                 ],
                 Response::HTTP_INTERNAL_SERVER_ERROR
             );

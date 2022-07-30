@@ -59,8 +59,7 @@ Route::group(["middleware" => "jwt.auth"] , function() {
 });
 
 Route::group(["middleware" => ["jwt.auth", "isSuperAdmin"]] , function() {
-    Route::post('/user/super_admin/{id}', [UserController::class, 'promoteUserToSuperAdmin']);
-    Route::post('/user/remove_super_admin/{id}', [UserController::class, 'degradeUserFromSuperAdmin']);
+    Route::post('/user/set-role/{newRole}/{id}', [UserController::class, 'setUserRole']);
 });
 
 // messages routes
