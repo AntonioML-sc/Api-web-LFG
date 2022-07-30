@@ -20,6 +20,11 @@ return new class extends Migration
                 ->references('id')
                 ->on('games')
                 ->onDelete('cascade');
+            $table->uuid('user_id')->nullable(false);
+            $table->foreign('user_id')
+                ->references('id')
+                ->on('users')
+                ->onDelete('cascade');
             $table->string('name');
             $table->timestamps();
         });
