@@ -15,7 +15,7 @@ return new class extends Migration
     {
         Schema::create('games', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->string('title');
+            $table->string('title')->unique();
             $table->uuid('user_id')->nullable(false);
             $table->foreign('user_id')
                 ->references('id')
