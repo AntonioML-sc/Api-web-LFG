@@ -302,4 +302,50 @@ class UserController extends Controller
             );
         }
     }
+
+    public function deleteUser($userId) {
+        try {
+
+            Log::info('A superadmin is deleteng an user');
+
+            $user = User::find($userId);
+
+            // check if user exists
+            if (!$user) {
+                return response()->json(
+                    [
+                        'success' => false,
+                        'message' => 'User not found'
+                    ],
+                    Response::HTTP_NOT_FOUND
+                );
+            }
+
+            // deleting user
+
+            Log::info('User ' . $user->id . ': ' . $user->email . 'deleted');
+
+            $user->delete();
+
+            return response()->json(
+                [
+                    'success' => true,
+                    'message' => 'User deleted'
+                ],
+                Response::HTTP_OK
+            );
+
+        } catch (\Exception $exception) {
+
+            Log::error("Error deleting user: " . $exception->getMessage());
+
+            return response()->json(
+                [
+                    'success' => false,
+                    'message' => 'Error deleting user'
+                ],
+                Response::HTTP_INTERNAL_SERVER_ERROR
+            );
+        }
+    }
 }
