@@ -262,4 +262,44 @@ class UserController extends Controller
             );
         }
     }
+
+    public function getUserById($userId) {
+        try {
+
+            Log::info('Retrieving all users');
+
+            $user = User::find($userId);
+
+            // check if user exists
+            if (!$user) {
+                return response()->json(
+                    [
+                        'success' => false,
+                        'message' => 'User not found'
+                    ],
+                    Response::HTTP_NOT_FOUND
+                );
+            }
+
+            return response()->json(
+                [
+                    'success' => true,
+                    'message' => 'User retrieved successfully',
+                    'data' => $user
+                ]
+            );
+
+        } catch (Exception $exception) {
+
+            Log::error("Error retrieveing user" . $exception->getMessage());
+
+            return response()->json(
+                [
+                    'success' => false,
+                    'message' => "Error retrieveing user"
+                ],
+                Response::HTTP_INTERNAL_SERVER_ERROR
+            );
+        }
+    }
 }
