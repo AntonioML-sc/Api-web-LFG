@@ -193,7 +193,7 @@ class ChannelController extends Controller
                     'success' => true,
                     'message' => "Channel's name edited: ". $newName
                 ],
-                Response::HTTP_CREATED
+                Response::HTTP_OK
             );
 
         } catch (\Exception $exception) {
@@ -204,6 +204,71 @@ class ChannelController extends Controller
                 [
                     'success' => false,
                     'message' => 'Error updating channel'
+                ],
+                Response::HTTP_INTERNAL_SERVER_ERROR
+            );
+        }
+    }
+
+    public function deleteChannel($channelId)
+    {
+        define('ADMIN_ID_LOCAL2', "5695fbbd-4675-4b2a-b31d-603252c21c94");
+
+        try {
+
+            Log::info('Deleting channel');
+
+            // check if the channel exists
+
+            $channel = Channel::find($channelId);
+
+            if (!$channel) {
+                return response()->json(
+                    [
+                        'success' => false,
+                        'message' => 'Channel not found'
+                    ],
+                    Response::HTTP_BAD_REQUEST
+                );
+            }
+
+            $userId = auth()->user()->id;
+            $userIsAdmin = User::find($userId)->roles->contains(ADMIN_ID_LOCAL2);
+
+            // check if the logged user is the author of the channel
+            // an admin can also delete the channel
+            if (($channel->user_id != $userId) && (!$userIsAdmin)) {
+                return response()->json(
+                    [
+                        'success' => false,
+                        'message' => 'This user is not allowed to delete this channel'
+                    ],
+                    Response::HTTP_FORBIDDEN
+                );
+            }
+
+            // deleting channel
+
+            Log::info('Channel ' . $channel->id . ': '  . $channel->name . ' is about to be deleted');
+            
+            $channel->delete();
+
+            return response()->json(
+                [
+                    'success' => true,
+                    'message' => "Channel deleted: "
+                ],
+                Response::HTTP_OK
+            );
+
+        }  catch (\Exception $exception) {
+
+            Log::error("Error deleting channel: " . $exception->getMessage());
+
+            return response()->json(
+                [
+                    'success' => false,
+                    'message' => 'Error deleting channel'
                 ],
                 Response::HTTP_INTERNAL_SERVER_ERROR
             );

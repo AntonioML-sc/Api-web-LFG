@@ -51,6 +51,7 @@ Route::group(["middleware" => "jwt.auth"] , function() {
     Route::post('/channels/new-channel', [ChannelController::class, 'newChannel']);
     Route::get('/channels/get-by-game/{game_id}', [ChannelController::class, 'getChannelsByGameId']);
     Route::put('/channels/update/{channelId}', [ChannelController::class, 'updateChannel']);
+    Route::delete('/channels/delete/{channelId}', [ChannelController::class, 'deleteChannel']);
 });
 
 // users routes
