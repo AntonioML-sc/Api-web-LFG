@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Channel;
 use App\Models\Game;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Log;
@@ -121,6 +122,88 @@ class ChannelController extends Controller
                 [
                     'success' => false,
                     'message' => 'Error getting channels'
+                ],
+                Response::HTTP_INTERNAL_SERVER_ERROR
+            );
+        }
+    }
+
+    public function updateChannel(Request $request, $channelId)
+    {
+        define('ADMIN_ID_LOCAL', "5695fbbd-4675-4b2a-b31d-603252c21c94");
+
+        try {
+
+            Log::info('Updating channel');            
+
+            // check if the channel exists
+
+            $channel = Channel::find($channelId);
+
+            if (!$channel) {
+                return response()->json(
+                    [
+                        'success' => false,
+                        'message' => 'Channel not found'
+                    ],
+                    Response::HTTP_BAD_REQUEST
+                );
+            }
+
+            $userId = auth()->user()->id;
+            $userIsAdmin = User::find($userId)->roles->contains(ADMIN_ID_LOCAL);
+
+            // check if the logged user is the author of the channel
+            // an admin can also edit the channel
+            if (($channel->user_id != $userId) && (!$userIsAdmin)) {
+                return response()->json(
+                    [
+                        'success' => false,
+                        'message' => 'The user is not allowed to edit this channel'
+                    ],
+                    Response::HTTP_FORBIDDEN
+                );
+            }
+
+            // validate new name. User can only edit the name
+            $validator = Validator::make($request->all(), [
+                'name' => ['required', 'string', 'max:255', 'min:4']
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json(
+                    [
+                        'success' => false,
+                        'message' => $validator->errors()
+                    ],
+                    Response::HTTP_BAD_REQUEST
+                );
+            }
+            
+            $newName = $request->input("name");
+
+            $channel->name = $newName;
+
+            $channel->save();
+
+            Log::info('Channel ' . $channel->id . ' edited. New name: ' . $channel->name);
+
+            return response()->json(
+                [
+                    'success' => true,
+                    'message' => "Channel's name edited: ". $newName
+                ],
+                Response::HTTP_CREATED
+            );
+
+        } catch (\Exception $exception) {
+
+            Log::error("Error updating channel: " . $exception->getMessage());
+
+            return response()->json(
+                [
+                    'success' => false,
+                    'message' => 'Error updating channel'
                 ],
                 Response::HTTP_INTERNAL_SERVER_ERROR
             );

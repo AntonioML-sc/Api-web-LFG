@@ -48,8 +48,9 @@ Route::group(["middleware" => ["jwt.auth", "isAdmin"]] , function() {
 
 // channels routes
 Route::group(["middleware" => "jwt.auth"] , function() {
-    Route::post('/new-channel', [ChannelController::class, 'newChannel']);
-    Route::get('/get-game-channels/{game_id}', [ChannelController::class, 'getChannelsByGameId']);
+    Route::post('/channels/new-channel', [ChannelController::class, 'newChannel']);
+    Route::get('/channels/get-by-game/{game_id}', [ChannelController::class, 'getChannelsByGameId']);
+    Route::put('/channels/update/{channelId}', [ChannelController::class, 'updateChannel']);
 });
 
 // users routes
