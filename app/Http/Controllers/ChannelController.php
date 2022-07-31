@@ -3,16 +3,19 @@
 namespace App\Http\Controllers;
 
 use App\Models\Channel;
+use App\Models\ChannelUser;
 use App\Models\Game;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpFoundation\Response;
 
 class ChannelController extends Controller
 {
-    public function newChannel(Request $request) {
+    public function newChannel(Request $request)
+    {
         try {
             Log::info('Creating channel');
 
@@ -53,7 +56,7 @@ class ChannelController extends Controller
             return response()->json(
                 [
                     'success' => true,
-                    'message' => 'New channel created: '. $name
+                    'message' => 'New channel created: ' . $name
                 ],
                 Response::HTTP_CREATED
             );
@@ -91,7 +94,14 @@ class ChannelController extends Controller
                 );
             }
 
-            $channels = Channel::query()->where('game_id', $game_id)->get()->toArray();
+            $channels = Channel::query()
+                ->join('channel_user', 'channels.id', '=', 'channel_user.channel_id')
+                ->select('channels.id as id', 'channels.name as channel', DB::raw("count(channel_user.user_id) as members"))
+                ->groupBy('channels.id')
+                ->where('channels.game_id', $game_id)
+                ->orderBy('channels.created_at', 'asc')
+                ->get()
+                ->toArray();
 
             // check if there are channels
             if ($channels == []) {
@@ -113,7 +123,6 @@ class ChannelController extends Controller
                 ],
                 Response::HTTP_OK
             );
-
         } catch (\Exception $exception) {
 
             Log::error("Error getting channels: " . $exception->getMessage());
@@ -134,7 +143,7 @@ class ChannelController extends Controller
 
         try {
 
-            Log::info('Updating channel');            
+            Log::info('Updating channel');
 
             // check if the channel exists
 
@@ -179,7 +188,7 @@ class ChannelController extends Controller
                     Response::HTTP_BAD_REQUEST
                 );
             }
-            
+
             $newName = $request->input("name");
 
             $channel->name = $newName;
@@ -191,11 +200,10 @@ class ChannelController extends Controller
             return response()->json(
                 [
                     'success' => true,
-                    'message' => "Channel's name edited: ". $newName
+                    'message' => "Channel's name edited: " . $newName
                 ],
                 Response::HTTP_OK
             );
-
         } catch (\Exception $exception) {
 
             Log::error("Error updating channel: " . $exception->getMessage());
@@ -250,7 +258,7 @@ class ChannelController extends Controller
             // deleting channel
 
             Log::info('Channel ' . $channel->id . ': '  . $channel->name . ' is about to be deleted');
-            
+
             $channel->delete();
 
             return response()->json(
@@ -260,8 +268,7 @@ class ChannelController extends Controller
                 ],
                 Response::HTTP_OK
             );
-
-        }  catch (\Exception $exception) {
+        } catch (\Exception $exception) {
 
             Log::error("Error deleting channel: " . $exception->getMessage());
 
