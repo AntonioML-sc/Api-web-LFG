@@ -21,33 +21,39 @@ class UserController extends Controller
 
             Log::info("User joining to channel");
 
+            // Validates channel_id
             $validator = Validator::make($request->all(), [
                 'channel_id' => 'required|string|max:36|min:36'
             ]);
 
             if ($validator->fails()) {
-                return response()->json($validator->errors()->toJson(), 400);
+                return response()->json($validator->errors()->toJson(), Response::HTTP_BAD_REQUEST);
             }
 
             $channelId = $request->input('channel_id');
 
             $channel = Channel::find($channelId);
 
+            // check if channel exists
             if (!$channel) {
                 return response()->json(
                     [
                         'success' => false,
                         'message' => 'The channel specified does not exist'
                     ],
-                    404
+                    Response::HTTP_BAD_REQUEST
                 );
             }
 
             $userId = auth()->user()->id;
 
             $user = User::find($userId);
+            $userIsInChannel = $user->channels->contains($channelId);
 
-            $user->channels()->attach($channelId);
+            // check if user joined to the channel previously. If not, user joins to channel.
+            if (!$userIsInChannel) {
+                $user->channels()->attach($channelId);
+            }
 
             Log::info('The user ' . $user->email . ' has joined to the channel ' . $channel->name);
 
@@ -56,7 +62,7 @@ class UserController extends Controller
                     'success' => true,
                     'message' => 'The user ' . $user->email . ' has joined to the channel ' . $channel->name
                 ],
-                200
+                Response::HTTP_OK
             );
         } catch (\Exception $exception) {
 
@@ -67,7 +73,7 @@ class UserController extends Controller
                     'success' => false,
                     'message' => 'Error in joining to channel'
                 ],
-                500
+                Response::HTTP_INTERNAL_SERVER_ERROR
             );
         }
     }
@@ -78,25 +84,27 @@ class UserController extends Controller
 
             Log::info("User leaving channel");
 
+            // validates channel_id
             $validator = Validator::make($request->all(), [
                 'channel_id' => 'required|string|max:36|min:36'
             ]);
 
             if ($validator->fails()) {
-                return response()->json($validator->errors()->toJson(), 400);
+                return response()->json($validator->errors()->toJson(), Response::HTTP_BAD_REQUEST);
             }
 
             $channelId = $request->input('channel_id');
 
             $channel = Channel::find($channelId);
 
+            // verify that channel exists
             if (!$channel) {
                 return response()->json(
                     [
                         'success' => false,
                         'message' => 'The channel specified does not exist'
                     ],
-                    404
+                    Response::HTTP_BAD_REQUEST
                 );
             }
 
@@ -104,6 +112,7 @@ class UserController extends Controller
 
             $user = User::find($userId);
 
+            // User leave the channel
             $user->channels()->detach($channelId);
 
             Log::info('The user ' . $user->email . ' has left the channel ' . $channel->name);
@@ -113,7 +122,7 @@ class UserController extends Controller
                     'success' => true,
                     'message' => 'The user ' . $user->email . ' has left the channel ' . $channel->name
                 ],
-                200
+                Response::HTTP_OK
             );
         } catch (\Exception $exception) {
 
@@ -124,7 +133,7 @@ class UserController extends Controller
                     'success' => false,
                     'message' => 'Error in leaving channel'
                 ],
-                500
+                Response::HTTP_INTERNAL_SERVER_ERROR
             );
         }
     }
@@ -137,6 +146,7 @@ class UserController extends Controller
         $superAdminIdLocal = "a3c06730-7018-467d-8187-cef95f37224d";
         $adminIdLocal = "5695fbbd-4675-4b2a-b31d-603252c21c94";
 
+        // functions to verify user roles and set a user role. A superadmin must be an admin as well.
         function setUser($user, $adminId, $superId)
         {
             $user->roles()->detach($adminId);
@@ -153,7 +163,7 @@ class UserController extends Controller
         }
 
         function setSuperAdmin($user, $adminId, $superId)
-        {            
+        {
             $isAdmin = $user->roles->contains($adminId);
             $isSuperAdmin = $user->roles->contains($superId);
             if (!$isAdmin) {
@@ -161,13 +171,14 @@ class UserController extends Controller
             }
             if (!$isSuperAdmin) {
                 $user->roles()->attach($superId);
-            }            
+            }
         }
 
         try {
 
             $user = User::find($userId);
 
+            // check if user exists
             if (!$user) {
                 return response()->json(
                     [
@@ -178,6 +189,7 @@ class UserController extends Controller
                 );
             }
 
+            // assign the new role to user
             switch ($newRole) {
                 case 'user':
                     setUser($user, $adminIdLocal, $superAdminIdLocal);
