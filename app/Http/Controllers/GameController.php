@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Game;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Symfony\Component\HttpFoundation\Response;
@@ -76,8 +77,14 @@ class GameController extends Controller
         try {
 
             Log::info('retrieving all games');
-
-            $games = Game::all();
+            
+            $games = Game::query()
+                ->leftJoin('channels', 'games.id', '=', 'channels.game_id')
+                ->select('games.id as id', 'games.title as title', DB::raw("count(channels.id) as channels"))
+                ->groupBy('games.id')
+                ->orderBy('games.created_at', 'asc')
+                ->get()
+                ->toArray();
 
             return response()->json(
                 [
@@ -86,7 +93,6 @@ class GameController extends Controller
                     'data' => $games
                 ]
             );
-
         } catch (\Exception $exception) {
 
             Log::error("Error retrieving games " . $exception->getMessage());
@@ -101,7 +107,8 @@ class GameController extends Controller
         }
     }
 
-    public function updateGame(Request $request, $gameId) {
+    public function updateGame(Request $request, $gameId)
+    {
         try {
 
             Log::info('Updating game');
@@ -152,19 +159,19 @@ class GameController extends Controller
             $age = $request->input("age");
             $devStudio = $request->input("dev_studio");
 
-            if(isset($title)) {
+            if (isset($title)) {
                 $game->title = $title;
             }
 
-            if(isset($genre)) {
+            if (isset($genre)) {
                 $game->genre = $genre;
             }
 
-            if(isset($age)) {
+            if (isset($age)) {
                 $game->age = $age;
             }
 
-            if(isset($devStudio)) {
+            if (isset($devStudio)) {
                 $game->dev_studio = $devStudio;
             }
 
@@ -177,9 +184,8 @@ class GameController extends Controller
                     'success' => true,
                     'message' => 'Game updated successfully',
                     'data' => $game
-                ]                
+                ]
             );
-
         } catch (\Exception $exception) {
 
             Log::error("Error updating game " . $exception->getMessage());
@@ -194,11 +200,12 @@ class GameController extends Controller
         }
     }
 
-    public function deleteGame($gameId) {
+    public function deleteGame($gameId)
+    {
         try {
 
             Log::info('Trying to delete game');
-            
+
             $game = Game::query()->find($gameId);
 
             if (!$game) {
@@ -231,9 +238,8 @@ class GameController extends Controller
                 [
                     'success' => true,
                     'message' => 'Game deleted successfully'
-                ]                
+                ]
             );
-
         } catch (\Exception $exception) {
 
             Log::error("Error deleting game " . $exception->getMessage());
