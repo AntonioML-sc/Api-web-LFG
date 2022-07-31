@@ -7,6 +7,7 @@ use App\Models\Game;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Log;
+use Symfony\Component\HttpFoundation\Response;
 
 class ChannelController extends Controller
 {
@@ -14,6 +15,7 @@ class ChannelController extends Controller
         try {
             Log::info('Creating channel');
 
+            // validate data
             $validator = Validator::make($request->all(), [
                 'game_id' => ['required', 'string', 'max:36', 'min:36'],
                 'name' => ['required', 'string', 'max:255', 'min:4']
@@ -25,7 +27,7 @@ class ChannelController extends Controller
                         'success' => false,
                         'message' => $validator->errors()
                     ],
-                    400
+                    Response::HTTP_BAD_REQUEST
                 );
             }
 
@@ -52,7 +54,7 @@ class ChannelController extends Controller
                     'success' => true,
                     'message' => 'New channel created: '. $name
                 ],
-                201
+                Response::HTTP_CREATED
             );
         } catch (\Exception $exception) {
 
@@ -63,7 +65,7 @@ class ChannelController extends Controller
                     'success' => false,
                     'message' => 'Error creating channel'
                 ],
-                500
+                Response::HTTP_INTERNAL_SERVER_ERROR
             );
         }
     }
@@ -77,35 +79,38 @@ class ChannelController extends Controller
 
             $game = Game::find($game_id);
 
+            // check if the game exists
             if (!$game) {
                 return response()->json(
                     [
                         'success' => false,
                         'message' => 'The game is not registered'
                     ],
-                    400
+                    Response::HTTP_BAD_REQUEST
                 );
             }
 
             $channels = Channel::query()->where('game_id', $game_id)->get()->toArray();
 
+            // check if there are channels
             if ($channels == []) {
                 return response()->json(
                     [
                         'success' => false,
                         'message' => 'There are no channels of the game specified yet'
                     ],
-                    404
+                    Response::HTTP_NOT_FOUND
                 );
             }
 
+            // retrieve channels
             return response()->json(
                 [
                     'success' => true,
                     'message' => 'Channels retrieved successfully',
                     'data' => $channels
                 ],
-                200
+                Response::HTTP_OK
             );
 
         } catch (\Exception $exception) {
@@ -117,7 +122,7 @@ class ChannelController extends Controller
                     'success' => false,
                     'message' => 'Error getting channels'
                 ],
-                500
+                Response::HTTP_INTERNAL_SERVER_ERROR
             );
         }
     }
