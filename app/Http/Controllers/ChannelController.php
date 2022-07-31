@@ -95,7 +95,7 @@ class ChannelController extends Controller
             }
 
             $channels = Channel::query()
-                ->join('channel_user', 'channels.id', '=', 'channel_user.channel_id')
+                ->leftJoin('channel_user', 'channels.id', '=', 'channel_user.channel_id')
                 ->select('channels.id as id', 'channels.name as channel', DB::raw("count(channel_user.user_id) as members"))
                 ->groupBy('channels.id')
                 ->where('channels.game_id', $game_id)
