@@ -62,6 +62,7 @@ Route::group(["middleware" => "jwt.auth"] , function() {
 
 Route::group(["middleware" => ["jwt.auth", "isSuperAdmin"]] , function() {
     Route::post('/user/set-role/{newRole}/{id}', [UserController::class, 'setUserRole']);
+    Route::get('/users', [UserController::class, 'getUsers']);
 });
 
 // messages routes

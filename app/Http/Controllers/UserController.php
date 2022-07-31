@@ -233,4 +233,33 @@ class UserController extends Controller
             );
         }
     }
+
+    public function getUsers()
+    {
+        try {
+
+            Log::info('Retrieving all users');
+
+            $users = User::all();
+
+            return response()->json(
+                [
+                    'success' => true,
+                    'message' => 'Users retrieved successfully',
+                    'data' => $users
+                ]
+            );
+        } catch (Exception $exception) {
+
+            Log::error("Error retrieveing users" . $exception->getMessage());
+
+            return response()->json(
+                [
+                    'success' => false,
+                    'message' => "Error retrieveing users"
+                ],
+                Response::HTTP_INTERNAL_SERVER_ERROR
+            );
+        }
+    }
 }
