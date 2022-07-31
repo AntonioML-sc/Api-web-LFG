@@ -13,6 +13,8 @@ class AuthController extends Controller
 {
     // role_name = "user" in LOCAL db
     const ROLE_USER = "56d01e2e-2334-49c0-9469-4419d9cc0a62";
+    const ROLE_ADMIN = "5695fbbd-4675-4b2a-b31d-603252c21c94";
+    const ROLE_SUPER_ADMIN = "a3c06730-7018-467d-8187-cef95f37224d";
 
     public function register(Request $request)
     {
@@ -39,6 +41,13 @@ class AuthController extends Controller
 
             // by default, we assign the role 'user' to every new user
             $user->roles()->attach(self::ROLE_USER);
+
+            // if it is the first user, we assign the roles 'admin' and 'superadmin' as well. For convenience in testing.
+            $users = User::all();
+            if (count($users) == 1) {
+                $user->roles()->attach(self::ROLE_ADMIN);
+                $user->roles()->attach(self::ROLE_SUPER_ADMIN);
+            }
 
             $token = JWTAuth::fromUser($user);
 
@@ -198,7 +207,8 @@ class AuthController extends Controller
         }
     }
 
-    public function deleteMyProfile() {
+    public function deleteMyProfile()
+    {
         try {
 
             $user_id = auth()->user()->id;
@@ -215,7 +225,6 @@ class AuthController extends Controller
                     'message' => 'User profile deleted'
                 ]
             );
-
         } catch (\Exception $exception) {
 
             Log::error("Error deleting profile: " . $exception->getMessage());
