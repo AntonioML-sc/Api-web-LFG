@@ -1,7 +1,7 @@
 
 <img src="./public/img/geekhubs.png"><br>
 
-#### PROYECTO GEEKSHUBS 6: BACKEND DE APLICACIÓN WEB LFG
+<h1> PROYECTO GEEKSHUBS 6: BACKEND DE APLICACIÓN WEB LFG </h1>
 
 #### Definición y alcance:
 
@@ -11,21 +11,21 @@ El background es el que sigue: </br>
 Una empresa quiere crear una aplicación web LFG, que permita que los empleados puedan contactar con otros compañeros para formar grupos para jugar a un videojuego, con el objetivo de poder compartir un rato de ocio afterwork. </br>
 
 Los requisitos funcionales mínimos de la aplicación son los siguientes: </br>
-● 1 Los usuarios se tienen que poder registrar a la aplicación, estableciendo un usuario/contraseña.
-● 2 Los usuarios tienen que autenticarse a la aplicación haciendo login.
-● 3 Los usuarios tienen que poder crear Partídas (grupos) para un determinado videojuego.
-● 4 Los usuarios tienen que poder buscar Partídas seleccionando un videojuego.
-● 5 Los usuarios pueden entrar y salir de una Party.
-● 6 Los usuarios tienen que poder enviar mensajes a la Party. Estos mensajes tienen que poder ser editados y borrados por su usuario creador.
-● 7 Los mensajes que existan en una Party se tienen que visualizar como un chat común.
-● 8 Los usuarios pueden introducir y modificar sus datos de perfil, por ejemplo, su usuario de Steam.
-● 9 Los usuarios tienen que poder hacer logout de la aplicación web.
+● 1 Los usuarios se tienen que poder registrar a la aplicación, estableciendo un usuario/contraseña. </br>
+● 2 Los usuarios tienen que autenticarse a la aplicación haciendo login. </br>
+● 3 Los usuarios tienen que poder crear Partídas (grupos) para un determinado videojuego. </br>
+● 4 Los usuarios tienen que poder buscar Partídas seleccionando un videojuego. </br>
+● 5 Los usuarios pueden entrar y salir de una Party. </br>
+● 6 Los usuarios tienen que poder enviar mensajes a la Party. Estos mensajes tienen que poder ser editados y borrados por su usuario creador. </br>
+● 7 Los mensajes que existan en una Party se tienen que visualizar como un chat común. </br>
+● 8 Los usuarios pueden introducir y modificar sus datos de perfil, por ejemplo, su usuario de Steam. </br>
+● 9 Los usuarios tienen que poder hacer logout de la aplicación web. </br>
 
 ● Además, se dispondrá de un CRUD de usuario y administrador con las operaciones básicas. </br><hr>
 
 #### Tecnologías aplicadas:
 
-Necesario: PHP, Laravel, SQL, MySQL, jsonwebtoken, bcript.
+Necesario: PHP, Laravel, SQL, MySQL, jsonwebtoken, bcript. </br>
 Muy recomendado: MySQL Workbench, Postman.</br><hr>
 
 #### Objetivos:
